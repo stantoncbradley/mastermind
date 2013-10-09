@@ -1,0 +1,111 @@
+//Mastermind
+//Stanton Bradley 4-25-13
+#include<iostream>
+#include<cstdlib>
+#include<ctime>
+using namespace std;
+		
+void fillCode(int array[])
+{
+	srand(time(0));				//generate random code
+	for (int x = 0; x < 4; x++)
+		array[x] = (1 + rand() % 6);
+}
+
+void getGuess(int array[])
+{
+	int guess;
+	bool valid = false;
+
+	do					//validate 4 digit guess
+	{					//convert to array
+		cin >> guess;
+		if (guess < 1111 || guess > 6666)
+			continue;
+
+		for (int x = 3; x >= -1; x--)
+		{	
+			if (x == -1)
+			{
+				valid = true;
+				break;
+			}
+			array[x] = guess % 10;
+			if (array[x] == 0 || array[x] > 6)
+				break;
+			if (x > 0)
+			{
+				guess -= array[x]; 
+				guess /= 10;
+			}
+		}
+	} while (!valid);
+}
+	
+void testGuess(int code[], int guess[], int clues[])
+{
+	int temp[4];
+	clues[0] = 0;				//correct position counter
+	clues[1] = 0;				//correct digit counter
+
+	for (int x = 0; x < 4; x++)
+		temp[x] = code[x];
+
+	for (int x = 0; x < 4; x++)
+		if (temp[x] == guess[x])	//correct position
+		{
+			temp[x] = 0;		//eliminate redundency
+			guess[x] = 7;
+			clues[0]++;
+		}
+
+	for (int x = 0; x < 4; x++)
+		for (int y = 0; y < 4; y++)		
+			if (temp[x] == guess[y])	//correct digit
+			{
+				guess[y] = 7;	//eliminate redundency
+				temp[x] = 0;
+				clues[1]++;
+			}
+}		
+	
+int main()
+{
+	int code[4];
+	int guess[4];
+	int clues[2];
+
+	fillCode(code);
+
+	cout << "\n\nWelcome to MasterMind.\n\n";
+	cout << "My 4 digit code uses # 1 - 6.\n";
+	cout << "You have 12 guesses to save the world.\n\n";
+
+	for (int tries = 1; tries <= 12; tries++)	//attempts loop
+	{
+		cout << "Guess " << tries << endl;
+		getGuess(guess);
+		testGuess(code, guess, clues);
+		
+		if (clues[0] == 4)			//code cracked
+		{	
+			cout << "Code ";
+			for (int x = 0; x < 4; x++)
+				cout << code[x];
+			cout << " cracked in " << tries << " tries\n\n";
+			break;
+		}
+		
+		cout << clues[0] << " digit(s) correctly placed\n";
+		cout << clues[1] << " digit(s) misplaced\n\n";
+	}
+	if (clues[0] != 4)				//exceeded tries
+	{
+		cout << "Time is up. The code was ";
+		for (int x = 0; x < 4; x++)
+			cout << code[x];
+		cout << "\nBetter luck next time.";
+	}
+	
+	return 0;
+}
